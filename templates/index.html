@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iris Species Prediction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), 
+                        linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.1) 75%), 
+                        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.1) 75%);
+            background-size: 60px 60px;
+            background-position: 0 0, 0 30px, 30px -30px, -30px 0px;
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(0.5deg); }
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 
+                        0 0 0 1px rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            width: 100%;
+            max-width: 550px;
+            text-align: center;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+        
+        .header {
+            margin-bottom: 35px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1rem;
+            font-weight: 400;
+            margin-bottom: 25px;
+        }
+        
+        .iris-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 16px rgba(255, 107, 107, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .iris-icon::before {
+            content: '🌸';
+            font-size: 24px;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .input-group {
+            position: relative;
+            text-align: left;
+        }
+        
+        label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            display: block;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            border: 2px solid #e1e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            background: #f8fafc;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        input[type="text"]:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .sepal-length .input-icon { background: linear-gradient(45deg, #ff6b6b, #ee5a52); }
+        .sepal-width .input-icon { background: linear-gradient(45deg, #4ecdc4, #44a08d); }
+        .petal-length .input-icon { background: linear-gradient(45deg, #45b7d1, #96c93d); }
+        .petal-width .input-icon { background: linear-gradient(45deg, #f093fb, #f5576c); }
+        
+        button {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px 30px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .prediction-result {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+            font-weight: 600;
+            margin-top: 15px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 30px 25px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .floating-elements::before,
+        .floating-elements::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float-up 15s linear infinite;
+        }
+        
+        .floating-elements::before {
+            width: 20px;
+            height: 20px;
+            left: 10%;
+            animation-delay: -5s;
+        }
+        
+        .floating-elements::after {
+            width: 30px;
+            height: 30px;
+            right: 10%;
+            animation-delay: -10s;
+        }
+        
+        @keyframes float-up {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements"></div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="iris-icon"></div>
+            <h1>Iris Species Prediction</h1>
+            <p class="subtitle">Enter the measurements to predict the Iris flower species</p>
+        </div>
+        
+        <form action="/predict" method="post">
+            <div class="features-grid">
+                <div class="input-group sepal-length">
+                    <label for="sepal_length">Sepal Length (cm)</label>
+                    <div class="input-wrapper">
+                        <div class="input-icon">SL</div>
+                        <input type="text" id="sepal_length" name="sepal_length" placeholder="e.g., 5.1" required>
+                    </div>
+                </div>
+                
+                <div class="input-group sepal-width">
+                    <label for="sepal_width">Sepal Width (cm)</label>
+                    <div class="input-wrapper">
+                        <div class="input-icon">SW</div>
+                        <input type="text" id="sepal_width" name="sepal_width" placeholder="e.g., 3.5" required>
+                    </div>
+                </div>
+                
+                <div class="input-group petal-length">
+                    <label for="petal_length">Petal Length (cm)</label>
+                    <div class="input-wrapper">
+                        <div class="input-icon">PL</div>
+                        <input type="text" id="petal_length" name="petal_length" placeholder="e.g., 1.4" required>
+                    </div>
+                </div>
+                
+                <div class="input-group petal-width">
+                    <label for="petal_width">Petal Width (cm)</label>
+                    <div class="input-wrapper">
+                        <div class="input-icon">PW</div>
+                        <input type="text" id="petal_width" name="petal_width" placeholder="e.g., 0.2" required>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit">🔍 Predict Species</button>
+        </form>
+        
+        {% if prediction_text %}
+            <div class="prediction-result">
+                🌺 {{ prediction_text }}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
